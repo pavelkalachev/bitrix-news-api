@@ -99,55 +99,6 @@ class NewsApi
         return $result;
     }
 
-    public function getNewsOld(): ?array // старый подход
-    {
-        $result = [];
-
-        $arOrder = [
-            'ID' => 'ASC'
-        ];
-        $arSelect = [
-            'ID',
-            'NAME',
-            'DETAIL_PAGE_URL',
-            'ACTIVE_FROM',
-            'PREVIEW_PICTURE',
-            'IBLOCK_SECTION_ID',
-            'TAGS'
-        ];
-        $arFilter = [
-            'IBLOCK_ID' => $this->iblockId,
-            '>=ACTIVE_FROM' => $this->dateFrom,
-            '<ACTIVE_FROM' => $this->dateTo
-        ];
-
-        $dbNews = \CIBlockElement::GetList($arOrder, $arFilter, false, false, $arSelect);
-
-        if ((int)$dbNews->SelectedRowsCount() <= 0) {
-            return null;
-        }
-
-        $arSections = $this->getSections();
-
-        while ($arItem = $dbNews->GetNextElement()) {
-            $arFields = $arItem->GetFields();
-            $arProps = $arItem->GetProperties();
-
-            $result[] = [
-                'id' => $arFields['ID'] > 0 ? (int)$arFields['ID'] : null,
-                'name' => strlen($arFields['NAME']) > 0 ? $arFields['NAME'] : null,
-                'url' => strlen($arFields['DETAIL_PAGE_URL']) > 0 ? $arFields['DETAIL_PAGE_URL'] : null,
-                'image' => $arFields['PREVIEW_PICTURE'] > 0 ? \CFile::GetPath($arFields['PREVIEW_PICTURE']) : null,
-                'sectionName' => $arSections[$arFields['IBLOCK_SECTION_ID']] ?? null,
-                'date' => $this->getFormattedDate($arFields['ACTIVE_FROM']),
-                'author' => $this->getAuthorName((int)$arProps['AUTHOR']['VALUE'], (int)$arProps['AUTHOR']['LINK_IBLOCK_ID']) ?? null,
-                'tags' => $this->getTagsArray($arFields['TAGS']) ?? null,
-            ];
-        }
-
-        return $result;
-    }
-
     /**
      * Метод для получения названия разделов, к которым привязаны элементы
      */
